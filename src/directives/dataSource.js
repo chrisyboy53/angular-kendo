@@ -14,7 +14,27 @@ angular.module('kendo.directives').directive('kDataSource', [function(){
       // Keep the element's data up-to-date with changes.
       $scope.$watch($attrs.kDataSource, function(newDataSource, oldDataSource){
         if(newDataSource !== oldDataSource){
-          $element.data('$kendoDataSource', toDataSource(newDataSource, dataSourceType));
+          var data = $element.data('$kendoDataSource');
+
+          if (data != undefined && data != null) {
+              if (Object.prototype.toString.call(oldDataSource) === "[object Array]")
+              {
+                  /* Appears that array struggles to force rerender
+                  *  This will allow us to change the array carefully
+                  *  without loosing the value type. CW
+                  */
+                  var length = data._data.length;
+                  for (var i = 0; i < length; i++) {
+                      var tmpObj = data.at(0);
+                      data.remove(tmpObj);
+                  }
+                  for (var j = 0; j < newDataSource.length; j++) {
+                      data.add(newDataSource[j]);
+                  }
+              } else {
+                $element.data('$kendoDataSource', toDataSource(newDataSource, dataSourceType));
+              }
+            }  
         }
       });
     }]
